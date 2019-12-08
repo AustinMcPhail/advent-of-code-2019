@@ -53,7 +53,7 @@ func main() {
 		}
 	}
 
-	for l := len(imagePixels) - 1; l > 0; l-- {
+	for l := len(imagePixels) - 1; l >= 0; l-- {
 		for i := 0; i < IMAGE_HEIGHT; i++ {
 			for j := 0; j < IMAGE_WIDTH; j++ {
 				curr := image[i][j]
