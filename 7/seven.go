@@ -60,12 +60,10 @@ func getThrustWithFeedback(combos [][]int, input []byte) int {
 	d := make(chan int)
 	e := make(chan int)
 	var wg sync.WaitGroup
-	for i, combo := range combos {
+	for _, combo := range combos {
 		go func() {
 			a <- combo[0]
-			if i == 0 {
-				a <- 0
-			}
+			a <- 0
 			b <- combo[1]
 			c <- combo[2]
 			d <- combo[3]
