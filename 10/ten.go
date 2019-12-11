@@ -5,6 +5,7 @@ import (
 	"io/ioutil"
 	"log"
 	"math"
+	"sort"
 	"strings"
 )
 
@@ -36,8 +37,52 @@ func main() {
 			}
 		}
 	}
-	fmt.Printf("%d Asteroids seen from position [%d, %d]", count, posX, posY)
-	fmt.Printf("Commencing asteroid evaporation from position [%d, %d]", posX, posY)
+	fmt.Printf("%d Asteroids seen from position [%d, %d]\n", count, posX, posY)
+	fmt.Printf("Commencing asteroid evaporation from position [%d, %d]\n", posX, posY)
+
+	angles := make([]float64, 0, len(asteroids))
+	for a := range asteroids {
+		angles = append(angles, a)
+	}
+	sort.Float64s(angles)
+	for i, j := 0, len(angles)-1; i < j; i, j = i+1, j-1 {
+		angles[i], angles[j] = angles[j], angles[i]
+	}
+
+	//NinetyToZero := []Asteroid{}
+	//ZeroToTwoSeventy := []Asteroid{}
+	//NinetyToZero := []Asteroid{}
+	//NinetyToZero := []Asteroid{}
+
+	for _, a := range angles {
+		sort.Slice(asteroids[a], func(i, j int) bool { return asteroids[a][i].distanceTo <= asteroids[a][j].distanceTo })
+	}
+
+
+	destroyed := 0
+	foundStart := false
+	startAngle := getAngle(posX, posY, posX, 0)
+	fmt.Println(startAngle)
+	var target Asteroid
+	for destroyed != 200 {
+		for _, a := range angles {
+			if !foundStart && startAngle == a {
+				foundStart = true
+			}
+			if foundStart && destroyed != 200 {
+				fmt.Println(a)
+				if len(asteroids[a]) >= 1 {
+					target = asteroids[a][0]
+					asteroids[a] = asteroids[a][1:]
+				} else {
+					target = asteroids[a][0]
+					asteroids[a] = []Asteroid{}
+				}
+				destroyed++
+			}
+		}
+	}
+	fmt.Println(target)
 }
 
 func findAsteroidsInSight(x int, y int, m map[int]map[int]string, height int, width int) (int, map[float64][]Asteroid) {
@@ -47,6 +92,9 @@ func findAsteroidsInSight(x int, y int, m map[int]map[int]string, height int, wi
 		for x2 := 0; x2 < width; x2++ {
 			if m[y2][x2] == ASTEROID && !(x == x2 && y == y2) {
 				a := getAngle(x, y, x2, y2)
+				if a < 0 {
+					a = 180 + math.Abs(a)
+				}
 				if _, ok := angles[a]; !ok {
 					count++
 					angles[a] = []Asteroid{}
@@ -68,16 +116,18 @@ func findAsteroidsInSight(x int, y int, m map[int]map[int]string, height int, wi
 	return count, angles
 }
 
+
+
 func getDistance(x1 int, y1 int, x2 int, y2 int) float64 {
-	x := math.Pow(float64(x2 - x1), 2)
-	y := math.Pow(float64(y2 - y1), 2)
+	x := math.Pow(float64(x2-x1), 2)
+	y := math.Pow(float64(y2-y1), 2)
 	return math.Sqrt(x + y)
 }
 
 func getAngle(x1 int, y1 int, x2 int, y2 int) float64 {
 	dX := x2 - x1
 	dY := y1 - y2
-	r := math.Atan2(float64(dY), float64(dX))
+	r := math.Atan2(float64(dY), float64(dX)) * 180 / math.Pi
 	return r
 }
 
